@@ -1,28 +1,30 @@
 <!-- 練習時腦袋要清醒一點 -->
 <!-- 最好是能專心再練，但更好的是能邊打瞌睡也做得出來 -->
+<!-- 沒事就多練幾遍，其他全會就卡這個是GG的 -->
 <?php
 session_start();
-date_default_timezone_set(("Asia/Taipei"));
+date_default_timezone_set("Asia/Taipei");
 
 class DB
 {
     private $table;
-    private $dsn = "mysql:host=localhost;charset=utf8;dbname=invoice";
     private $pdo;
+    private $dsn = "mysql:host=localhost;charset=utf8;dbname=invoice";
     private $root = "root";
     private $password = "";
     public function __construct($table)
     {
+        $this->pdo = new PDO($this->dsn, $this->root, $this->password);
         $this->table = $table;
-        $this->pdo = new PdO($this->dsn, $this->root, $this->password);
     }
-    // search data
+
+    //search data
     public function all(...$arg)
     {
         $sql = "SELECT * FROM $this->table ";
         if (isset($arg[0]) && is_array($arg[0])) {
             foreach ($arg[0] as $key => $value) {
-                $tmp[] = sprintf("`%s='%s", $key, $value);
+                $tmp[] = sprintf("`%s`='%s'", $key, $value);
             }
             $sql .= " WHERE " . implode(" && ", $tmp);
         }
@@ -30,37 +32,37 @@ class DB
         return $this->pdo->query($sql)->fetchAll();
     }
 
-    // delete data
+    //delete data
     public function del($arg)
     {
         $sql = "DELETE FROM $this->table ";
         if (is_array($arg)) {
             foreach ($arg as $key => $value) {
-                $tmp[] = sprintf("`%s`='%s", $key, $value);
+                $tmp[] = sprintf("`%s`='%s'", $key, $value);
             }
             $sql .= " WHERE " . implode(" && ", $tmp);
-        } else $sql .= " WHERE id='$arg'";
+        } else $sql .= " WHERE `id`='$arg'";
         return $this->pdo->exec($sql);
     }
 
-    // search specific data
+    //select specific data
     public function find($arg)
     {
         $sql = "SELECT * FROM $this->table ";
         if (is_array($arg)) {
             foreach ($arg as $key => $value) {
-                $tmp[] = sprintf("`%s`='%s'", $key, $value);
+                $tmp[] = sprintf("`%s`='%s`", $key, $value);
             }
             $sql .= " WHERE " . implode(" && ", $tmp);
         } else $sql .= " WHERE id='$arg'";
         return $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
     }
 
-    // count data numbers
+    //count data numbers
     public function count(...$arg)
     {
         $sql = "SELECT COUNT(*) FROM $this->table ";
-        if (isset($arg[0])) {
+        if (is_array($arg[0])) {
             foreach ($arg[0] as $key => $value) {
                 $tmp[] = sprintf("`%s`='%s'", $key, $value);
             }
@@ -79,25 +81,20 @@ class DB
     //insert or update data
     public function save($arg)
     {
-        if (isset($arg['id]'])) {
+        if (isset($arg['id'])) {
             foreach ($arg as $key => $value) {
                 $tmp[] = sprintf("`%s`='%s'", $key, $value);
             }
             //update
-            $sql = "UPDATE $this->table SET " . implode(",", $tmp) . " WHERE id='" . $arg['id'] . "'";
-            //insert
-        } else $sql = "INSERT INTO $this->table SET (`" . implode("`,`", array_keys($arg)) . "`) VALUES ('" . implode("','", $arg) . "')";
+            $sql = "UPDATE " . $this->table . " SET " . implode(",", $tmp) . "WHERE `id`='" . $arg['id'] . "'";
+        } else $sql = "INSERT INTO " . $this->table . " (`" . implode(",", array_keys($arg)) . "') VALUES ('" . implode($arg) . "')";
         return $this->pdo->exec($sql);
     }
 }
-// direct
-function to($url)
+function to($sql)
 {
-    header("location:" . $url);
+    header("location:" . $sql);
 }
-
-
-
 
 
 
