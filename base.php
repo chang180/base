@@ -1,5 +1,3 @@
-<!-- 練習時腦袋要清醒一點 -->
-<!-- 最好是能專心再練，但更好的是能邊打瞌睡也做得出來 -->
 <?php
 session_start();
 date_default_timezone_set("Asia/Taipei");
@@ -8,7 +6,7 @@ class DB
 {
     private $table;
     private $pdo;
-    private $dsn = "mysql:host=localhost;charset=utf8;dbname=invoice";
+    private $dsn = "mysql:host=localhost;charset=utf8;dbname=db01";
     private $root = "root";
     private $password = "";
     public function __construct($table)
@@ -17,103 +15,86 @@ class DB
         $this->pdo = new PDO($this->dsn, $this->root, $this->password);
     }
 
-    // search data
-    public function all(...$arg)
+    public function add(...$arg)
     {
         $sql = "SELECT * FROM $this->table ";
         if (!empty($arg[0]) && is_array($arg[0])) {
-            foreach ($arg[0] as $key => $value) {
-                $tmp[] = sprintf("`%s`='%s'", $key, $value);
-            }
+            foreach ($arg[0] as $key => $value) $tmp[] = "`$key`='$value'";
             $sql .= " WHERE " . implode(" && ", $tmp);
         }
-        if (!empty($arg[1])) $sql .= $arg[1];
+        if (isset($arg[1])) $sql .= $arg[1];
         return $this->pdo->query($sql)->fetchAll();
     }
-    //delete data
+
     public function del($arg)
     {
         $sql = "DELETE FROM $this->table ";
         if (is_array($arg)) {
-            foreach ($arg as $key => $value) {
-                $tmp[] = sprintf("`%s='%s'", $key, $value);
-            }
+            foreach ($arg as $key => $value) $tmp[] = "`$key`='$value'";
             $sql .= " WHERE " . implode(" && ", $tmp);
         } else $sql .= " WHERE `id`='$arg'";
         return $this->pdo->exec($sql);
     }
-
-    //search specific data
     public function find($arg)
     {
         $sql = "SELECT * FROM $this->table ";
         if (is_array($arg)) {
-            foreach ($arg as $key => $value) {
-                $tmp[] = sprintf("`%s`='%s'", $key, $value);
-            }
+            foreach ($arg as $key => $value) $tmp[] = "`$key`='$value'";
             $sql .= " WHERE " . implode(" && ", $tmp);
-        } else $sql .= " WHERE `id`=''$arg'";
+        } else $sql .= " WHERE `id`='$arg'";
         return $this->pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
     }
 
-    // count data numbers
-    public function count(...$arg)
-    {
-        $sql = "SELECT COUNT(*) FROM $this->table ";
-        if (!empty($arg[0]) && is_array($arg[0])) {
-            foreach ($arg[0] as $key => $value) {
-                $tmp[] = sprintf("`%s`='%s'", $key, $value);
-            }
-            $sql .= " WHERE " . implode(" && ", $tmp);
-        }
-        if (isset($arg[1])) $sql .= $arg[1];
-        return $this->pdo->query($sql)->fetchColumn();
+public function count(...$arg){
+    $sql="SELECT COUNT(*) FROM $this->table ";
+    if(is_array($arg[0])){
+        foreach ($arg[0] as $key => $value) $tmp[]="`$key`='$value'";
+        $sql.=" WHERE ".implode(" && ",$tmp);
     }
-
-    //   query
-    public function q($sql)
-    {
-        return $this->pdo->query($sql)->fetchAll();
-    }
-
-    // insert or update data
-    public function save($arg)
-    {
-        if (isset($arg['id'])) {
-            foreach ($arg as $key => $value) {
-                $tmp[] = sprintf("`%s`='%s'", $key, $value);
-            }
-            //update
-            $sql = "UPDATE $this->table SET " . implode(",", $tmp) . " WHERE `id`='" . $arg['id'] . "'";
-            //insert
-        } else $sql = "INSERT INTO $this->table (`" . implode("`,`", array_keys($arg)) . "`) VALUES ('" . implode("','", $arg) . "')";
-        return $this->pdo->exec($sql);
-    }
+    if(isset($arg[1])) $sql.=$arg[1];
+    return $this->pdo->query($sql)->fetchColumn();
 }
 
-// direct
-function to($url)
-{
-    header("location:" . $url);
+public function q($sql){
+    return $this->pdo->query($sql)->fetchAll();
+}
+
+public function save($arg){
+    if(isset($arg['id'])){
+        foreach ($arg as $key=>$value) $tmp[]="`$key`='$value'";
+        $sql=sprintf("UPDATE %s SET %s WHERE `ID`='%s'", $this->table,implode(",",$tmp),$arg['id']);
+    }else $sql=sprintf("INSERT INTO %s (`%s`) WHERE ('%s')", $this->table, implode("`,`",array_keys($arg)),implode("','",$arg));
+    return $this->pdo->exec($sql);
 }
 
 
+}
+
+function to($url){
+    header("location:".$url);
+}
+
+$Title=new DB('title');
+$Ad=new DB('ad');
+$Image=new DB('image');
+$Mvim=new DB('mvim');
+$Admin=new DB('admin');
+$Total=new DB('total');
+$Bottom=new DB('bottom');
+$Menu=new DB('menu');
+$News=new DB('news');
+
+$title=$Title->find(['sh'=>1]);
+$bottom=$Bottom->find(1);
+$total=$Total->find(1);
+
+if(empty($_SESSION['visited'])){
+$total['total']++;
+$Total->save($total);
+$_SESSION['visited']=1;
+$total=$Total->find(1);
+}
 
 
-
-
-
-$inv = new DB("invoice");
-$an = new DB('award_number');
-
-$row = $inv->all("", " limit 5");
-//$row=all('invoice',""," limit 5");
-$ar = $an->find(2);
-//$ar=find('award_number',2);
-
-print_r($row);
-
-echo "<hr>";
-print_r($ar);
 
 ?>
