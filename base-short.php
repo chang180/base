@@ -68,11 +68,23 @@ function to($url){
 
 }
 
-if(empty($_SESSION['visited'])){
-$_SESSION['visited']=1;
-$total=$Total->find(1);
-$total['total']++;
-$Total->save($total);
-$total=$Total->find(1);
+$Title = new DB('title');
+$Ad = new DB('ad');
+$Mvim = new DB('mvim');
+$Image = new DB('image');
+$News = new DB('news');
+$Admin = new DB('Admin');
+$Total = new DB('total');
+$menu = new DB('menu');
+$Bottom = new DB('bottom');
+$title = $Title->find(1);
+$bottom = $Bottom->find(1);
 
+if (empty($_SESSION['visited'])) {
+    $total = $Title->find(1);
+    $total['total'] = $_SESSION['visited']++;
+    $Title->save($total);
+    $total = $Title->find(1);
 }
+
+?>
