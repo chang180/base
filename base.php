@@ -71,7 +71,7 @@ $Test= new DB('test');
 echo "資料全撈<hr>";
 print_r($Test->all());
 echo "<hr>";
-echo "加兩筆<hr>";
+echo "加一筆，改一筆<hr>";
 $Test->save(['test'=>'test']);
 $Test->save(['test'=>'test2']);
 print_r($Test->all());
