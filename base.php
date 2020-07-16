@@ -65,18 +65,21 @@ function to($url){
 }
 
 
-
 //test 測試
+if(empty($_SESSION['test'])) to("test.php");
+unset($_SESSION['test']);
+echo "導頁成功";
+echo "<hr>";
 $Test= new DB('test');
 echo "資料全撈<hr>";
 print_r($Test->all());
 echo "<hr>";
-echo "加一筆，改一筆<hr>";
-$Test->save(['test'=>'test']);
+echo "加資料，改一筆<hr>";
 $Test->save(['test'=>'test2']);
+$Test->save(['test'=>'Hello!','id'=>1]);
 print_r($Test->all());
 echo "<hr>";
-echo "刪一筆<hr>";
+echo "刪資料<hr>";
 $Test->del(['test'=>"test2"]);
 print_r($Test->all());
 echo "<hr>";
